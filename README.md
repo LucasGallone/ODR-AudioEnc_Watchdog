@@ -18,7 +18,7 @@ Otherwise, replace ```SUPERVISOR_URL = "http://odr:odr@127.0.0.1:8001/RPC2"``` w
 ```
 [program:40-ODR-AudioEnc_Watchdog]
 command=python3 ODR-AudioEnc_Watchdog.py
-directory=/home/odr/ [<- Edit this value with the path of the directory where you have placed the script]
+directory=/home/odr/ [<- Edit this value with the path where the script is located]
 autostart=true
 autorestart=true
 user=root
