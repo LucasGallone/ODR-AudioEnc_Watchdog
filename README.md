@@ -1,9 +1,11 @@
 # Watchdog Service for ODR-AudioEncoder
-This is a Python3 script that aims to check the audio encoders of an ODR DAB+ multiplex every 5 minutes and restarts them in case of a failure.
+This is a Python3 script that aims to check [the audio encoders of an ODR DAB+ multiplex](https://github.com/Opendigitalradio/ODR-AudioEnc) every 5 minutes and restarts them in case of a failure.
 
 In case the status of one of the audio encoders is "FATAL" or "EXITED" in Supervisor, the script attempts to restart it until it works again, **along with the associated PAD encoder**.
 
 If the first restart attempt does not work, a new one is issued every 15 seconds as long as necessary.
+
+You can learn more about Opendigitalradio and discover their tools [by clicking here.](https://www.opendigitalradio.org/)
 
 # Instructions for integrating the script into the web interface of Supervisor
 
