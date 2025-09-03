@@ -59,8 +59,8 @@ def restart_service(server, service_name, force=False):
             time.sleep(2)
 
         except Exception as e:
-            log(f"RESTART ATTEMPT FAILED: Error during the restart attempt of {service_name}: {e} - New attempt in 15 seconds.", level="ERROR")
-            time.sleep(15)
+            log(f"RESTART ATTEMPT FAILED: Error during the restart attempt of {service_name} - New attempt in 2 minutes.", level="ERROR")
+            time.sleep(120)
 
         # Recheck the status
         try:
