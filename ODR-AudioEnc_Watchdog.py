@@ -69,7 +69,7 @@ def restart_service(server, service_name, force=False):
                 log(f"{service_name} is now RUNNING.")
                 break
         except Exception:
-            time.sleep(15)
+            time.sleep(120)
 
 def restart_audio_with_pad(server, audio_service):
     """Restarts the audioencoder if the service is down, as well as the associated padencoder no matter its status"""
