@@ -3,7 +3,7 @@ This is a Python3 script that aims to check [the audio encoders of an ODR DAB+ m
 
 In case the status of one of the audio encoders is "FATAL" or "EXITED" in Supervisor, the script attempts to restart it until it works again, **along with the associated PAD encoder**.
 
-If the first restart attempt does not work, a new one is issued every 15 seconds as long as necessary.
+If the first restart attempt does not work, a new one is issued every 2 minutes as long as necessary.
 
 You can learn more about Opendigitalradio and discover their tools [by clicking here.](https://www.opendigitalradio.org/)
 
