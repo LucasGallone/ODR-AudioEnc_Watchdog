@@ -38,3 +38,6 @@ sudo supervisorctl update
 
 If working well, you should get the following message:
 ```[INFO] The watchdog service is now running. All audio encoders are checked every 5 minutes to detect a possible failure.```
+
+# The Watchdog service in action (Example)
+![exemple-audioenc-watchdog](https://github.com/user-attachments/assets/ffe9bfdf-93ed-4ee7-b447-8674fcf3276e)
