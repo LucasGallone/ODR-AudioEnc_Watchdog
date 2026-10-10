@@ -80,6 +80,33 @@ active_restarts = set()
 # Cache to store feed URLs while services are active
 stream_url_cache = {}
 
+# Input options of ODR-AudioEnc that define the audio source, in the order they are tried.
+# Matches the longopts[] table of ODR-AudioEnc's odr-audioenc.cpp: --gst-uri (GStreamer
+# input), --vlc-uri (VLC input) and --input (file input).
+STREAM_URI_OPTIONS = ("gst-uri", "vlc-uri", "input")
+
+def extract_stream_url(section_text):
+    """Extracts the audio source URI from one [program:odr-audioencoder-*] section.
+
+    Understands the spellings ODR-AudioEnc accepts and ODR-EncoderManager writes
+    ("--vlc-uri=file:///..."), as well as the space-separated and quoted variants
+    ("--vlc-uri 'file:///...'"). Returns None when nothing usable is found.
+    """
+    for option in STREAM_URI_OPTIONS:
+        m = re.search(
+            rf"--{option}(?:=|\s+)(?:\"([^\"]+)\"|'([^']+)'|(?!-{{2}})(\S+))",
+            section_text,
+        )
+        if m:
+            return m.group(1) or m.group(2) or m.group(3)
+
+    # Fallback for setups using an option we do not know about
+    m = re.search(r"(https?://[^\s'\"]+)", section_text)
+    if m:
+        return m.group(1)
+
+    return None
+
 def get_stream_url(service):
     """Retrieves the stream URL from cache or directly from the Supervisor configuration file."""
     if service in stream_url_cache and stream_url_cache[service]:
@@ -96,14 +123,13 @@ def get_stream_url(service):
             # Isolates the specific section of this audio encoder within the file
             section_pattern = rf"\[program:odr-audioencoder-{uuid}\](.*?)(?=\n\[program:|\Z)"
             match_section = re.search(section_pattern, content, re.DOTALL)
-            section_text = match_section.group(1) if match_section else content
+            # Only look inside this encoder's own section. Falling back to the whole
+            # file would pick up the first other encoder's source and report that
+            # stream as being down, which is worse than reporting no URL at all.
+            section_text = match_section.group(1) if match_section else ""
 
-            # Extraction of the stream URL (--gst-uri)
-            m = re.search(r"--gst-uri=([^\s'\"]+)", section_text)
-            if not m:
-                m = re.search(r"(https?://[^\s'\"]+)", section_text)
-            if m:
-                url = m.group(1)
+            # Extraction of the stream URL from this encoder's input option
+            url = extract_stream_url(section_text)
     except Exception:
         pass
 

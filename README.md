@@ -21,7 +21,7 @@ You can learn more about Opendigitalradio and discover their tools [by clicking 
   * Support for explicit STARTTLS and unencrypted SMTP.
 * **Smart Station Identification in Emails:**
   * **Dictionary mode:** Map UUIDs (Encoder process IDs in Supervisor) to readable station names, using a manual dictionary in the script.
-  * **Stream mode:** Automatically extracts the stream URL directly from your `ODR-encoders.conf` file.
+  * **Stream mode:** Automatically extracts the stream URL directly from your `ODR-encoders.conf` file, for the VLC input (`--vlc-uri`), the GStreamer input (`--gst-uri`) and the file input (`--input`).
   * **Process mode:** Raw Supervisor process name.
 * **Fully Customizable Timers:** Control check intervals, first restart delay, subsequent retry delays, and alert thresholds directly from the configuration section.
 
