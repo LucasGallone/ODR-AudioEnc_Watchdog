@@ -316,6 +316,41 @@ def restart_audio_with_pad(server_unused, audio_service):
     finally:
         active_restarts.discard(audio_service)
 
+def restart_pad_only(pad_service):
+    """Restarts a PAD encoder that failed on its own, leaving its audio encoder untouched.
+
+    restart_audio_with_pad() is only ever called for a faulty audio encoder, so a PAD
+    encoder that crashed on its own was detected but never repaired: the audio keeps
+    playing while DLS/Slideshow stays dead.
+
+    The audio encoder must not be bounced for this. PadInterface uses an AF_UNIX
+    SOCK_DGRAM socket and resolves /tmp/<uuid>.padenc on every request(), so the running
+    ODR-AudioEnc reaches the restarted ODR-PadEnc again by itself.
+    """
+    if pad_service in active_restarts:
+        return
+
+    active_restarts.add(pad_service)
+    try:
+        # Creation of a local ServerProxy instance for this thread to avoid network collisions (thread safety)
+        server = xmlrpc.client.ServerProxy(SUPERVISOR_URL)
+
+        pad_uuid = pad_service.replace("odr-padencoder-", "")
+        audio_service = f"odr-audioencoder-{pad_uuid}"
+
+        # If the audio encoder is down as well, restart_audio_with_pad() already refreshes
+        # the PAD encoder, so there is nothing to do here.
+        services = get_services_status(server)
+        if services.get(audio_service, "UNKNOWN") in BAD_STATUS:
+            return
+
+        log(f"PAD ENCODER FAILURE DETECTED: Restart attempt of {pad_service} (audio encoder {audio_service} left untouched)")
+        restart_service(server, pad_service)
+    except Exception as e:
+        log(f"ERROR: Exception in restart thread for {pad_service}: {e}", level="ERROR")
+    finally:
+        active_restarts.discard(pad_service)
+
 def main():
     if SEND_TEST_EMAIL_ON_START:
         log('Test email mode enabled! Remember to set the "SEND_TEST_EMAIL_ON_START" argument in the script to "False" once you no longer need it.', level="SMTP INFO")
@@ -374,6 +409,15 @@ def main():
                 # Asynchronous launch to handle multiple failures simultaneously
                 if service not in active_restarts:
                     threading.Thread(target=restart_audio_with_pad, args=(server, service), daemon=True).start()
+
+            # A PAD encoder that failed on its own is repaired without touching its audio
+            # encoder, which may still be on air. If the audio encoder is down as well,
+            # restart_audio_with_pad() already takes care of the PAD encoder.
+            elif service.startswith("odr-padencoder-") and status in BAD_STATUS:
+                pad_uuid = service.replace("odr-padencoder-", "")
+                if services.get(f"odr-audioencoder-{pad_uuid}", "UNKNOWN") not in BAD_STATUS:
+                    if service not in active_restarts:
+                        threading.Thread(target=restart_pad_only, args=(service,), daemon=True).start()
                 
         time.sleep(CHECK_INTERVAL_SECONDS)  # Global check of all audioencoder services every XX seconds
 
