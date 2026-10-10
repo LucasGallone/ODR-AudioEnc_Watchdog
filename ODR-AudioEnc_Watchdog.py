@@ -123,7 +123,10 @@ def get_stream_url(service):
             # Isolates the specific section of this audio encoder within the file
             section_pattern = rf"\[program:odr-audioencoder-{uuid}\](.*?)(?=\n\[program:|\Z)"
             match_section = re.search(section_pattern, content, re.DOTALL)
-            section_text = match_section.group(1) if match_section else content
+            # Only look inside this encoder's own section. Falling back to the whole
+            # file would pick up the first other encoder's source and report that
+            # stream as being down, which is worse than reporting no URL at all.
+            section_text = match_section.group(1) if match_section else ""
 
             # Extraction of the stream URL from this encoder's input option
             url = extract_stream_url(section_text)
