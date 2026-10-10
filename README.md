@@ -3,6 +3,8 @@ A zero-dependency Python 3 watchdog script designed to monitor [ODR-AudioEnc](ht
 
 If an audio encoder crashes with a `FATAL` or `EXITED` status, the script attempts to revive it, **along with its associated PAD encoder**, until normal broadcasting resumes. Multiple encoders can be restarted simultaneously in the background.
 
+A PAD encoder that crashes on its own is also recovered on its own: its audio encoder is left untouched, so the audio keeps playing while DLS/Slideshow comes back.
+
 You can learn more about Opendigitalradio and discover their tools [by clicking here](http://www.opendigitalradio.org/).
 
 ---
@@ -10,6 +12,7 @@ You can learn more about Opendigitalradio and discover their tools [by clicking 
 ## Features
 * **Zero External Dependencies:** Built entirely with native Python 3 standard modules.
 * **Asynchronous Multi-encoder Restarts:** Handled concurrently via background threads.
+* **Standalone PAD Encoder Recovery:** A PAD encoder that fails on its own is restarted by itself, without interrupting the associated audio encoder.
 * **Email Alerts (via SMTP):**
   * Customizable delay before sending an alert for persistent outages.
   * Automatic **"Back on air"** restoration email once the encoder recovers.
